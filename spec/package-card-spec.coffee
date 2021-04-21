@@ -79,6 +79,36 @@ describe "PackageCard", ->
     expect(card.refs.loginLink.href).toBe("https://atom.io/users/#{authorName}")
 
   describe "when the package is not installed", ->
+
+    it "opens the warning panel when install button is clicked", ->
+      setPackageStatusSpies {installed: false, disabled: false}
+      spyOn(atom.notifications, "addWarning")
+      spyOn(packageManager, 'install')
+      atom.notifications.clear()
+      card = new PackageCard {name: 'test-package'}, new SettingsView(), packageManager
+      expect(card.refs.installButton.style.display).not.toBe('none')
+      expect(card.refs.uninstallButton.style.display).toBe('none')
+      card.refs.installButton.click()
+      expect(packageManager.install).not.toHaveBeenCalled()
+      expect(atom.notifications.getNotifications().length).toBe(1)
+      expect(atom.notifications.getNotifications()[0].getType()).toBe('warning')
+
+
+    it "opens doesn't install if the notification is dismissed", ->
+        setPackageStatusSpies {installed: false, disabled: false}
+        spyOn(atom.notifications, "addWarning")
+        spyOn(packageManager, 'install')
+        atom.notifications.clear()
+        card = new PackageCard {name: 'test-package'}, new SettingsView(), packageManager
+        expect(card.refs.installButton.style.display).not.toBe('none')
+        expect(card.refs.uninstallButton.style.display).toBe('none')
+        card.refs.installButton.click()
+        expect(packageManager.install).not.toHaveBeenCalled()
+        expect(atom.notifications.getNotifications().length).toBe(1)
+        expect(atom.notifications.getNotifications()[0].getType()).toBe('warning')
+        expect(atom.notifications.addWarning).toHaveBeenCalled()
+
+
     it "shows the settings, uninstall, and disable buttons", ->
       pack =
         name: 'some-package'
@@ -101,8 +131,17 @@ describe "PackageCard", ->
       card = new PackageCard {name: 'test-package'}, new SettingsView(), packageManager
       expect(card.refs.installButton.style.display).not.toBe('none')
       expect(card.refs.uninstallButton.style.display).toBe('none')
+      atom.notifications.clear()
       card.refs.installButton.click()
+      expect(packageManager.install).not.toHaveBeenCalled()
+      expect(atom.notifications.getNotifications().length).toBe(1)
+      expect(atom.notifications.getNotifications()[0].getType()).toBe('warning')
+      # currently called directly for lack of a better way of testing the notification
+      # that I am aware of.
+      card.install()
       expect(packageManager.install).toHaveBeenCalled()
+
+
 
     it "can be installed if currently not installed and package latest release engine match atom version", ->
       spyOn(packageManager, 'install')
@@ -129,7 +168,12 @@ describe "PackageCard", ->
 
       expect(card.refs.installButton.style.display).not.toBe('none')
       expect(card.refs.uninstallButton.style.display).toBe('none')
+      atom.notifications.clear()
       card.refs.installButton.click()
+      expect(packageManager.install).not.toHaveBeenCalled()
+      expect(atom.notifications.getNotifications().length).toBe(1)
+      expect(atom.notifications.getNotifications()[0].getType()).toBe('warning')
+      card.install()
       expect(packageManager.install).toHaveBeenCalled()
       expect(packageManager.install.mostRecentCall.args[0]).toEqual({
         name: 'test-package'
@@ -163,7 +207,12 @@ describe "PackageCard", ->
       expect(card.refs.versionValue.textContent).toBe('0.0.1')
       expect(card.refs.versionValue).toHaveClass('text-warning')
       expect(card.refs.packageMessage).toHaveClass('text-warning')
+      atom.notifications.clear()
       card.refs.installButton.click()
+      expect(packageManager.install).not.toHaveBeenCalled()
+      expect(atom.notifications.getNotifications().length).toBe(1)
+      expect(atom.notifications.getNotifications()[0].getType()).toBe('warning')
+      card.install()
       expect(packageManager.install).toHaveBeenCalled()
       expect(packageManager.install.mostRecentCall.args[0]).toEqual({
         name: 'test-package'
@@ -192,6 +241,8 @@ describe "PackageCard", ->
       expect(card.refs.packageActionButtonGroup).not.toBeVisible()
       expect(card.refs.versionValue).toHaveClass('text-error')
       expect(card.refs.packageMessage).toHaveClass('text-error')
+
+
 
   describe "when the package is installed", ->
     beforeEach ->
@@ -536,7 +587,7 @@ describe "PackageCard", ->
             notifications = atom.notifications.getNotifications()
             expect(notifications.length).toBe 1
             notif = notifications[0]
-            
+
             expect(notif.options.detail).toBe "1.0.0 -> 1.1.0"
             expect(notif.options.buttons.length).toBe(2)
 
