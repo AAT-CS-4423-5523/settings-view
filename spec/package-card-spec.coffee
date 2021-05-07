@@ -80,35 +80,6 @@ describe "PackageCard", ->
 
   describe "when the package is not installed", ->
 
-    it "opens the warning panel when install button is clicked", ->
-      setPackageStatusSpies {installed: false, disabled: false}
-      spyOn(atom.notifications, "addWarning")
-      spyOn(packageManager, 'install')
-      atom.notifications.clear()
-      card = new PackageCard {name: 'test-package'}, new SettingsView(), packageManager
-      expect(card.refs.installButton.style.display).not.toBe('none')
-      expect(card.refs.uninstallButton.style.display).toBe('none')
-      card.refs.installButton.click()
-      expect(packageManager.install).not.toHaveBeenCalled()
-      expect(atom.notifications.getNotifications().length).toBe(1)
-      expect(atom.notifications.getNotifications()[0].getType()).toBe('warning')
-
-
-    it "opens doesn't install if the notification is dismissed", ->
-        setPackageStatusSpies {installed: false, disabled: false}
-        spyOn(atom.notifications, "addWarning")
-        spyOn(packageManager, 'install')
-        atom.notifications.clear()
-        card = new PackageCard {name: 'test-package'}, new SettingsView(), packageManager
-        expect(card.refs.installButton.style.display).not.toBe('none')
-        expect(card.refs.uninstallButton.style.display).toBe('none')
-        card.refs.installButton.click()
-        expect(packageManager.install).not.toHaveBeenCalled()
-        expect(atom.notifications.getNotifications().length).toBe(1)
-        expect(atom.notifications.getNotifications()[0].getType()).toBe('warning')
-        expect(atom.notifications.addWarning).toHaveBeenCalled()
-
-
     it "shows the settings, uninstall, and disable buttons", ->
       pack =
         name: 'some-package'
@@ -141,6 +112,30 @@ describe "PackageCard", ->
       card.install()
       expect(packageManager.install).toHaveBeenCalled()
 
+    it "opens the warning panel when install button is clicked", ->
+      setPackageStatusSpies {installed: false, disabled: false}
+      spyOn(packageManager, 'install')
+      atom.notifications.clear()
+      card = new PackageCard {name: 'test-package'}, new SettingsView(), packageManager
+      expect(card.refs.installButton.style.display).not.toBe('none')
+      expect(card.refs.uninstallButton.style.display).toBe('none')
+      card.refs.installButton.click()
+      expect(packageManager.install).not.toHaveBeenCalled()
+      expect(atom.notifications.getNotifications().length).toBe(1)
+      expect(atom.notifications.getNotifications()[0].getType()).toBe('warning')
+
+
+    it "doesn't install if the notification is dismissed", ->
+        setPackageStatusSpies {installed: false, disabled: false}
+        spyOn(packageManager, 'install')
+        atom.notifications.clear()
+        card = new PackageCard {name: 'test-package'}, new SettingsView(), packageManager
+        expect(card.refs.installButton.style.display).not.toBe('none')
+        expect(card.refs.uninstallButton.style.display).toBe('none')
+        card.refs.installButton.click()
+        expect(packageManager.install).not.toHaveBeenCalled()
+        expect(atom.notifications.getNotifications().length).toBe(1)
+        expect(atom.notifications.getNotifications()[0].getType()).toBe('warning')
 
 
     it "can be installed if currently not installed and package latest release engine match atom version", ->
