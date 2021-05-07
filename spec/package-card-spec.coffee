@@ -136,6 +136,9 @@ describe "PackageCard", ->
         expect(packageManager.install).not.toHaveBeenCalled()
         expect(atom.notifications.getNotifications().length).toBe(1)
         expect(atom.notifications.getNotifications()[0].getType()).toBe('warning')
+        atom.notifications.clear()
+        expect(packageManager.install).not.toHaveBeenCalled()
+        expect(atom.notifications.getNotifications().length).toBe(0)
 
 
     it "can be installed if currently not installed and package latest release engine match atom version", ->
